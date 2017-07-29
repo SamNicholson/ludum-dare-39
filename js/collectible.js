@@ -10,17 +10,35 @@ var Collectible = function (startPosition, sprite, powerAffect, game) {
 };
 
 Collectible.prototype.update = function (id, game, collectibleHandler) {
+
+    var self = this;
+
     this.collectible.y += COLLECTIBLE_SPEED;
 
     //Check if it needs to be deleted
     if (this.collectible.y - 32 > game.canvas.height) {
-        game.stage.removeChild(this.collectible);
-        collectibleHandler.collectiblesSpawned--;
-        collectibleHandler.activeCollectables.splice(id, 1);
+        this.delete(id, game, collectibleHandler);
     }
 
     //Check for collision
-
+    $.each(game.robots, function(robotId, robot) {
+        self.checkForCollision(id, game, robot, collectibleHandler);
+    });
 };
 
-// Collectible.prototype.delete = function (id, game, collectibleHandler)
+Collectible.prototype.checkForCollision = function (id, game, robot, collectibleHandler) {
+    //Check this collectible is in the correct vertical range
+    if (this.collectible.y < game.canvas.height && this.collectible.y > game.canvas.height - ROBOT_SIZE) {
+        //Check the collectible is in the correct horizontal range
+        if (this.collectible.x > robot.robot.x && this.collectible.x < robot.robot.x + ROBOT_SIZE) {
+            this.delete(id, game, collectibleHandler);
+            robot.changePower(this.powerAffect);
+        }
+    }
+};
+
+Collectible.prototype.delete = function (id, game, collectibleHandler) {
+    game.stage.removeChild(this.collectible);
+    collectibleHandler.collectiblesSpawned--;
+    collectibleHandler.activeCollectables.splice(id, 1);
+};
