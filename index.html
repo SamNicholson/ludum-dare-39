@@ -15,7 +15,8 @@
 
 
     <style type="text/css">
-        #container {
+        #container canvas {
+            background-color: #13071d;
         }
     </style>
 </head>
@@ -24,12 +25,14 @@
     tine.DEFAULT_CONFIG.container = 'game';
     tine.DEFAULT_CONFIG.width = 1024;
     tine.DEFAULT_CONFIG.height = 576;
+    tine.DEFAULT_CONFIG.background_color = '#13071d';
 
     ROBOT_SIZE = 64;
     ROBOT_BOTTOM_OFFSET = 32;
 
     POWER_DEGRADE = -0.025;
 
+    ROBOT_JUMP_PENALTY = -0.3;
     ROBOT_BASE_MOVEMENT_SPEED = 5;
     ROBOT_MINIMUM_MOVEMENT_SPEED = 3;
     ROBOT_SPRINT_MOVEMENT_MULTIPLIER = 2;
@@ -96,13 +99,25 @@
                         "shields": [6,7, "shields", 0.1]
                     }
                 });
+
+                game.load.spritesheet('blueSpaceship', 'sprites/blue_spaceship.png', {
+                    "framerate": 30,
+                    "frames": {"regX": 32, "height": 64, "count": 64, "regY": 32, "width": 64},
+                    "animations": {
+                        "fly":     [0, 1, "fly", 1.5],
+                        "left":    [2,3, "left"],
+                        "right":   [4,5, "right"],
+                        "shields": [6,7, "shields", 0.1]
+                    }
+                });
             },
 
             create: function() {
 
                 //TODO - we can add multiplayer functionality in here - initialise more robots and get them to move
                 game.robots = [];
-                game.robots.push(new Robot([480, 576], 'redSpaceship', game));
+                game.robots.push(new Robot([280, 576], 'redSpaceship', game, 1));
+                game.robots.push(new Robot([720, 576], 'blueSpaceship', game, 2));
                 game.collectibleHandler = new CollectibleHandler(game);
                 game.difficultyIncrementor = new Difficulty();
                 game.sound.play('background');
@@ -169,27 +184,6 @@
             }
         }
     });
-
-    function collisionCheck(rect1,rect2){
-
-        if(rect1.y <= rect2.y){ //top edge
-            // if ( rect1.x >= rect2.x + rect2.width || rect1.x + rect1.width <= rect2.x || rect1.y >= rect2.y + rect2.height || rect1.y + rect1.height <= rect2.y ){
-            return false;
-        }
-        else if((rect2.y + rect2.height) <= rect1.y){ //bottom edge
-            return false;
-        }
-        else if(rect1.x < rect2.x){ //left edge
-            return false;
-        }
-        else if((rect2.x + rect2.width) <= rect1.x){ //right edge
-            return false;
-        }
-        else{
-            return true;
-        }
-    }c
-
 </script>
 <body onload="">
     <div id="container">
