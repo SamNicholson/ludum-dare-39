@@ -23,4 +23,4 @@ Collectible.prototype.update = function (id, game, collectibleHandler) {
 
 };
 
-Collectible.prototype.delete = function (id, game, collectibleHandler)
+// Collectible.prototype.delete = function (id, game, collectibleHandler)
