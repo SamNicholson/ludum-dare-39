@@ -9,6 +9,8 @@
 
     <!-- Game Assets -->
     <script type="text/javascript" src="js/robot_handler.js"></script>
+    <script type="text/javascript" src="js/collectible.js"></script>
+    <script type="text/javascript" src="js/collectible_handler.js"></script>
 
 
     <style type="text/css">
@@ -24,6 +26,13 @@
 
     POWER_DEGRADE = -0.025;
 
+    COLLECTIBLE_SPEED = 1.5;
+    COLLECTIBLE_MAX = 10;
+    COLLECTIBLE_SPAWN_INTERVAL = 1;
+    COLLECTIBLE_SPAWN_CHANCE = 0.01;
+    GAME_TIME = 0;
+    GAME_START_TIME = new Date();
+
     $(function(){
 
         var domFps = $('#game-fps');
@@ -31,12 +40,12 @@
 
         setInterval(function() {
             domFps.html(Math.round(createjs.Ticker.getMeasuredFPS()));
-            // domTick.html(Math.round(createjs.Ticker.getMeasuredTickTime()));
         }, 100);
 
         var game = new tine.Game(null, {
             preload: function() {
                 game.load.image('robot', 'images/robot.png');
+                game.load.image('collectible', 'images/sample_collectable.png');
             },
 
             create: function() {
@@ -44,13 +53,19 @@
                 //TODO - we can add multiplayer functionality in here - initialise more robots and get them to move
                 game.robots = [];
                 game.robots.push(new Robot([512, 526], 'robot', game));
+                game.collectibleHandler = new CollectibleHandler(game);
 
             },
 
             update: function() {
+
                 $.each(game.robots, function(key, robot) {
                     robot.update(game);
                 });
+                game.collectibleHandler.update(game);
+
+                //Handle updating the game time
+                GAME_TIME = (new Date() - GAME_START_TIME)/1000;
             }
         });
 
