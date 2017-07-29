@@ -34,11 +34,24 @@ CollectibleHandler.prototype.create = function(game) {
 };
 
 CollectibleHandler.prototype.spawnCollectible = function (game) {
+
+    var typeToSpawn = Math.random();
+
     this.collectiblesSpawned++;
     this.collectiblesLastSpawned = (new Date() - GAME_START_TIME)/1000;
     var startPosition = [
         (Math.random() * game.canvas.width + 32),
         (-32)
     ];
-    this.activeCollectables.push(new Collectible(startPosition, 'collectible', +3, game));
+
+    if (typeToSpawn < COLLECTIBLE_BAD_SPAWN_CHANCE) {
+        this.activeCollectables.push(new Collectible(startPosition, 'asteroid', -5, game));
+    } else {
+        this.activeCollectables.push(new Collectible(startPosition, 'collectible', +3, game));
+    }
+
+
+
+
+
 };
