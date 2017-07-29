@@ -2,27 +2,75 @@
 <html>
 <head>
     <title>Ludum Dare 39</title>
-    <script type="text/javascript" src="js/create.js"></script>
-    <script type="text/javascript" src="js/jquery.js"></script>
+    <!-- Libraries -->
+    <script type="text/javascript" src="js/libs/create.js"></script>
+    <script type="text/javascript" src="js/libs/creatine.js"></script>
+    <script type="text/javascript" src="js/libs/jquery.js"></script>
+
+    <!-- Game Assets -->
+    <script type="text/javascript" src="js/robot_handler.js"></script>
+
+
     <style type="text/css">
         #container {
-            position: relative;
-            width: 1000px;
-            height: 600px;
-            margin: 0 auto;
-            background-color: black;
         }
     </style>
 </head>
 <script type="application/javascript">
+
+    tine.DEFAULT_CONFIG.container = 'game';
+    tine.DEFAULT_CONFIG.width = 1024;
+    tine.DEFAULT_CONFIG.height = 576;
+
+    POWER_DEGRADE = -0.025;
+
     $(function(){
-        //Start the game off here
-    })
+
+        var domFps = $('#game-fps');
+        // var domTick = $('#game-tick');
+
+        setInterval(function() {
+            domFps.html(Math.round(createjs.Ticker.getMeasuredFPS()));
+            // domTick.html(Math.round(createjs.Ticker.getMeasuredTickTime()));
+        }, 100);
+
+        var game = new tine.Game(null, {
+            preload: function() {
+                game.load.image('robot', 'images/robot.png');
+            },
+
+            create: function() {
+
+                //TODO - we can add multiplayer functionality in here - initialise more robots and get them to move
+                game.robots = [];
+                game.robots.push(new Robot([512, 526], 'robot', game));
+
+            },
+
+            update: function() {
+                $.each(game.robots, function(key, robot) {
+                    robot.update(game);
+                });
+            }
+        });
+
+        game.end = function() {
+            if (!game.hasEnded) {
+                alert('game over');
+                game.hasEnded = true;
+            }
+        }
+
+
+
+    });
 </script>
-<body onload="init();">
+<body onload="">
     <div id="container">
-        <canvas id="game" width="1000px" height="600px"></canvas>
+        <div id="game" width="1000px" height="600px"></div>
         <div id="place-holder">
+            <div class="bg-dark gameview">
+                <p class="uk-padding-left" style="padding-bottom:2px">FPS: <span id="game-fps">Constant</span></p>
         </div>
     </div>
 <script>
