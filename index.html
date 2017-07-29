@@ -43,6 +43,7 @@
 
     GAME_TIME = 0;
     GAME_START_TIME = new Date();
+    GAME_SCORE = 0;
 
     $(function(){
 
@@ -57,21 +58,42 @@
             preload: function() {
 
                 createjs.Sound.alternateExtensions = ["mp3"];
-                game.load.audio('background', 'audio/BKG_Happy.mp3', {group:'background'});
+                game.load.audio('background', 'audio/BKG_HappyTempIncre.mp3', {group:'background'});
+                game.load.audio('backgroundFast', 'audio/BKG_HappyTemp160.mp3', {group:'backgroundFast'});
+                game.load.audio('asteroidHit', 'audio/FX_PowerPickup4BAD.mp3', {group:'asteroid'});
 
                 game.load.image('robot', 'sprites/spaceship_red_base1.png');
-                game.load.image('collectible', 'sprites/pickup_redpower2.png');
-                game.load.image('collectibleGood', 'sprites/pickup_bluepower2.png');
+                game.load.image('title', 'images/title.png');
+                game.load.image('particle', 'images/particle_red.png');
+                game.load.image('particleGrey', 'images/particle_gray.png');
                 game.load.image('asteroid', 'sprites/asteroidA.png');
+                game.load.image('planet', 'images/planet.png');
+
+
+                game.load.spritesheet('collectible', 'sprites/atom.png', {
+                    "framerate": 30,
+                    "frames": {"regX": 16, "height": 32, "count": 8, "regY": 16, "width": 32},
+                    "animations": {
+                        "fly":     [0, 7, "fly", 0.1]
+                    }
+                });
+
+                game.load.spritesheet('collectibleGood', 'sprites/atomsuper.png', {
+                    "framerate": 30,
+                    "frames": {"regX": 16, "height": 32, "count": 8, "regY": 16, "width": 32},
+                    "animations": {
+                        "fly":     [0, 7, "fly", 0.1]
+                    }
+                });
 
                 game.load.spritesheet('redSpaceship', 'sprites/red_spaceship.png', {
                     "framerate": 30,
                     "frames": {"regX": 32, "height": 64, "count": 64, "regY": 32, "width": 64},
                     "animations": {
-                        "fly": [0, 1, "fly", 1.5],
-                        "left": [2,3, "left"],
-                        "right": [4,5, "right"],
-                        "shields": [6,7, "shields"]
+                        "fly":     [0, 1, "fly", 1.5],
+                        "left":    [2,3, "left"],
+                        "right":   [4,5, "right"],
+                        "shields": [6,7, "shields", 0.1]
                     }
                 });
             },
@@ -85,6 +107,42 @@
                 game.difficultyIncrementor = new Difficulty();
                 game.sound.play('background');
 
+                game.score = game.create.text('Score: 0', {
+                    font:'32px arial',
+                    color:'#efefef',
+                    x: game.canvas.width - 200,
+                    y: game.canvas.height - 64
+                });
+                game.stage.addChild(game.score);
+
+                var title = game.create.bitmap("title", {regX:'center', regY:'center', x:525, y:60});
+
+                game.stage.addChild(title);
+
+                //Planet 1
+
+                var smoke = game.create.bitmap('particleGrey', {regX:'center', regY:'center'});
+
+                planet1Smoke = new tine.Emitter(smoke, 500);
+                planet1Smoke.emitX = 512;
+                planet1Smoke.emitY = 288;
+                planet1Smoke.emitXVar = 1000;
+                planet1Smoke.emitYVar = 600;
+                planet1Smoke.angle = 90;
+                planet1Smoke.angleVar = 0;
+                planet1Smoke.speed = 10;
+                planet1Smoke.speed = 10;
+                planet1Smoke.speedVar = 0;
+                planet1Smoke.life = 50000;
+                planet1Smoke.lifeVar = 0;
+                planet1Smoke.emissionRate = 5000;
+                planet1Smoke.startScale = 0.05;
+                planet1Smoke.endScale = 0.1;
+                planet1Smoke.endScaleVar = 0;
+
+                planet1Smoke.start(-1);
+                game.stage.addChild(planet1Smoke);
+
             },
 
             update: function() {
@@ -96,6 +154,11 @@
                 game.difficultyIncrementor.update(game);
                 //Handle updating the game time
                 GAME_TIME = (new Date() - GAME_START_TIME)/1000;
+                GAME_SCORE = Math.round(GAME_TIME * 10) / 10;
+                game.score.text = 'Score: ' + GAME_SCORE;
+
+                planet1Smoke.update(game.time.delta);
+
             }
         });
 
@@ -106,6 +169,26 @@
             }
         }
     });
+
+    function collisionCheck(rect1,rect2){
+
+        if(rect1.y <= rect2.y){ //top edge
+            // if ( rect1.x >= rect2.x + rect2.width || rect1.x + rect1.width <= rect2.x || rect1.y >= rect2.y + rect2.height || rect1.y + rect1.height <= rect2.y ){
+            return false;
+        }
+        else if((rect2.y + rect2.height) <= rect1.y){ //bottom edge
+            return false;
+        }
+        else if(rect1.x < rect2.x){ //left edge
+            return false;
+        }
+        else if((rect2.x + rect2.width) <= rect1.x){ //right edge
+            return false;
+        }
+        else{
+            return true;
+        }
+    }c
 
 </script>
 <body onload="">

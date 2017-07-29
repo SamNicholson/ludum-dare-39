@@ -8,7 +8,7 @@ var Robot = function (startPosition, sprite, game) {
 
 
     //Create the power bar
-    this.bar1 = new tine.ProgressBar('green', 'white', tine.BOTTOM_TO_TOP,515, 15);
+    this.bar1 = new tine.ProgressBar('green', 'white', tine.BOTTOM_TO_TOP,415, 15);
     this.bar1.value = 100;
     this.bar1.x = 32;
     this.bar1.y = game.canvas.height - 32;
@@ -59,6 +59,9 @@ Robot.prototype.changePower = function(changeAmount) {
         this.robot.gotoAndPlay('shields');
     }
     this.bar1.value = this.bar1.value + changeAmount;
+    if (this.bar1.value > 100) {
+        this.bar1.value = 100;
+    }
 };
 
 Robot.prototype.animate = function() {
