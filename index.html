@@ -11,6 +11,7 @@
     <script type="text/javascript" src="js/robot_handler.js"></script>
     <script type="text/javascript" src="js/collectible.js"></script>
     <script type="text/javascript" src="js/collectible_handler.js"></script>
+    <script type="text/javascript" src="js/difficulty-incrementor.js"></script>
 
 
     <style type="text/css">
@@ -39,6 +40,7 @@
     COLLECTIBLE_MAX = 10;
     COLLECTIBLE_SPAWN_INTERVAL = 1.5;
     COLLECTIBLE_SPAWN_CHANCE = 0.1;
+
     GAME_TIME = 0;
     GAME_START_TIME = new Date();
 
@@ -53,17 +55,35 @@
 
         var game = new tine.Game(null, {
             preload: function() {
+
+                createjs.Sound.alternateExtensions = ["mp3"];
+                game.load.audio('background', 'audio/BKG_Happy.mp3', {group:'background'});
+
                 game.load.image('robot', 'sprites/spaceship_red_base1.png');
                 game.load.image('collectible', 'sprites/pickup_redpower2.png');
+                game.load.image('collectibleGood', 'sprites/pickup_bluepower2.png');
                 game.load.image('asteroid', 'sprites/asteroidA.png');
+
+                game.load.spritesheet('redSpaceship', 'sprites/red_spaceship.png', {
+                    "framerate": 30,
+                    "frames": {"regX": 32, "height": 64, "count": 64, "regY": 32, "width": 64},
+                    "animations": {
+                        "fly": [0, 1, "fly", 1.5],
+                        "left": [2,3, "left"],
+                        "right": [4,5, "right"],
+                        "shields": [6,7, "shields"]
+                    }
+                });
             },
 
             create: function() {
 
                 //TODO - we can add multiplayer functionality in here - initialise more robots and get them to move
                 game.robots = [];
-                game.robots.push(new Robot([512, 526], 'robot', game));
+                game.robots.push(new Robot([480, 576], 'redSpaceship', game));
                 game.collectibleHandler = new CollectibleHandler(game);
+                game.difficultyIncrementor = new Difficulty();
+                game.sound.play('background');
 
             },
 
@@ -73,7 +93,7 @@
                     robot.update(game);
                 });
                 game.collectibleHandler.update(game);
-
+                game.difficultyIncrementor.update(game);
                 //Handle updating the game time
                 GAME_TIME = (new Date() - GAME_START_TIME)/1000;
             }
@@ -86,26 +106,6 @@
             }
         }
     });
-
-    function collisionCheck(rect1,rect2){
-
-        if(rect1.y <= rect2.y){ //top edge
-            // if ( rect1.x >= rect2.x + rect2.width || rect1.x + rect1.width <= rect2.x || rect1.y >= rect2.y + rect2.height || rect1.y + rect1.height <= rect2.y ){
-            return false;
-        }
-        else if((rect2.y + rect2.height) <= rect1.y){ //bottom edge
-            return false;
-        }
-        else if(rect1.x < rect2.x){ //left edge
-            return false;
-        }
-        else if((rect2.x + rect2.width) <= rect1.x){ //right edge
-            return false;
-        }
-        else{
-            return true;
-        }
-    }
 
 </script>
 <body onload="">

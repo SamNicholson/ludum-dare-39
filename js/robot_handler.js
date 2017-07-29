@@ -3,7 +3,7 @@
  */
 var Robot = function (startPosition, sprite, game) {
     //Create the robot sprite
-    this.robot = game.create.bitmap(sprite, {regX:'center', regY:'center', x:startPosition[0], y:startPosition[1]});
+    this.robot = game.create.sprite(sprite, 'fly', {regX:'center', regY:'center', x:startPosition[0], y:startPosition[1]});
     game.stage.addChild(this.robot);
 
 
@@ -29,11 +29,14 @@ Robot.prototype.update = function(game) {
         this.degredationMultiplier = 1;
     }
 
-    if ((game.keyboard.isDown(tine.keys.A)) && (this.robot.x >= 32)) {
+    if ((game.keyboard.isDown(tine.keys.A)) && (this.robot.x - (ROBOT_SIZE / 2) >= ROBOT_BOTTOM_OFFSET)) {
         this.robot.x -= this.calculateMovementSpeed() * (60 * game.time.fdelta);
-    }
-    if ((game.keyboard.isDown(tine.keys.D)) && (this.robot.x <= (game.canvas.width - 32))) {
+        this.robot.gotoAndPlay('left');
+    } else if ((game.keyboard.isDown(tine.keys.D)) && (this.robot.x - (ROBOT_SIZE / 2) <= (game.canvas.width - ROBOT_BOTTOM_OFFSET))) {
         this.robot.x += this.calculateMovementSpeed() * (60 * game.time.fdelta);
+        this.robot.gotoAndPlay('right');
+    } else {
+        this.robot.gotoAndPlay('fly');
     }
 
     this.changePower((POWER_DEGRADE * this.degredationMultiplier));
@@ -52,5 +55,12 @@ Robot.prototype.calculateMovementSpeed = function() {
 };
 
 Robot.prototype.changePower = function(changeAmount) {
+    if (changeAmount < -1) {
+        this.robot.gotoAndPlay('shields');
+    }
     this.bar1.value = this.bar1.value + changeAmount;
+};
+
+Robot.prototype.animate = function() {
+
 };

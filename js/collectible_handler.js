@@ -46,6 +46,8 @@ CollectibleHandler.prototype.spawnCollectible = function (game) {
 
     if (typeToSpawn < COLLECTIBLE_BAD_SPAWN_CHANCE) {
         this.activeCollectables.push(new Collectible(startPosition, 'asteroid', -5, game));
+    } else if (Math.random() < COLLECTIBLE_GOOD_SPAWN_CHANCE) {
+        this.activeCollectables.push(new Collectible(startPosition, 'collectibleGood', +10, game));
     } else {
         this.activeCollectables.push(new Collectible(startPosition, 'collectible', +3, game));
     }

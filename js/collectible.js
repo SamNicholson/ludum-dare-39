@@ -38,8 +38,8 @@ Collectible.prototype.checkForCollision = function (id, game, robot, collectible
         //Check the collectible is in the correct horizontal range
         var collectibleLeftEdge = this.collectible.x;
         var collectibleRightEdge = this.collectible.x + (this.collectible.regX * 2);
-        var robotLeftEdge = robot.robot.x;
-        var robotRightEdge = robot.robot.x + ROBOT_SIZE;
+        var robotLeftEdge = robot.robot.x - (ROBOT_SIZE / 2);
+        var robotRightEdge = robot.robot.x + ROBOT_SIZE - (ROBOT_SIZE / 2);
 
         if (
             collectibleLeftEdge <= robotLeftEdge && collectibleLeftEdge >= robotRightEdge ||
