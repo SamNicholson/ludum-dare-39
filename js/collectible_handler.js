@@ -44,8 +44,24 @@ CollectibleHandler.prototype.spawnCollectible = function (game) {
         (-32)
     ];
 
-    if (typeToSpawn < COLLECTIBLE_BAD_SPAWN_CHANCE) {
-        this.activeCollectables.push(new Collectible(startPosition, 'asteroid', -5, game));
+
+    if (typeToSpawn < COLLECTIBLE_SHIELD_CHANCE) {
+        this.activeCollectables.push(new Collectible(startPosition, 'shield', +100, game));
+    } else if (typeToSpawn < COLLECTIBLE_BAD_SPAWN_CHANCE) {
+        var asteroidType = Math.random();
+        if (asteroidType < METEOR_SMALL_THRESHOLD) {
+            //Spawn small one
+            this.activeCollectables.push(new Collectible(startPosition, 'asteroidSmall', -5, game));
+        } else if (asteroidType < METEOR_LARGE_THRESHOLD) {
+            this.activeCollectables.push(new Collectible(startPosition, 'asteroidLarge', -15, game));
+        } else {
+
+            if (Math.random() < 0.5) {
+                this.activeCollectables.push(new Collectible(startPosition, 'asteroidMedium', -10, game));
+            } else {
+                this.activeCollectables.push(new Collectible(startPosition, 'asteroidMedium2', -10, game));
+            }
+        }
     } else if (Math.random() < COLLECTIBLE_GOOD_SPAWN_CHANCE) {
         this.activeCollectables.push(new Collectible(startPosition, 'collectibleGood', +10, game));
     } else {

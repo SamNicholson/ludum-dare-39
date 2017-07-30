@@ -30,7 +30,8 @@
     ROBOT_SIZE = 64;
     ROBOT_BOTTOM_OFFSET = 32;
 
-    POWER_DEGRADE = -0.025;
+    POWER_DEGRADE = 0;
+    PLAYERS = 2;
 
     ROBOT_JUMP_PENALTY = -0.3;
     ROBOT_BASE_MOVEMENT_SPEED = 5;
@@ -43,6 +44,10 @@
     COLLECTIBLE_MAX = 10;
     COLLECTIBLE_SPAWN_INTERVAL = 1.5;
     COLLECTIBLE_SPAWN_CHANCE = 0.1;
+    COLLECTIBLE_SHIELD_CHANCE = 0.05;
+
+    METEOR_SMALL_THRESHOLD = 0.3;
+    METEOR_LARGE_THRESHOLD = 0.35;
 
     GAME_TIME = 0;
     GAME_START_TIME = new Date();
@@ -67,10 +72,17 @@
 
                 game.load.image('robot', 'sprites/spaceship_red_base1.png');
                 game.load.image('title', 'images/title.png');
-                game.load.image('particle', 'images/particle_red.png');
+//                game.load.image('particle', 'images/particle_red.png');
                 game.load.image('particleGrey', 'images/particle_gray.png');
-                game.load.image('asteroid', 'sprites/asteroidA.png');
+
+                game.load.image('asteroidSmall', 'sprites/asteroidA.png');
+                game.load.image('asteroidMedium', 'sprites/asteroidMedium.png');
+                game.load.image('asteroidMedium2', 'sprites/asteroidMedium2.png');
+                game.load.image('asteroidLarge', 'sprites/asteroidLarge.png');
+
                 game.load.image('planet', 'images/planet.png');
+                game.load.image('lives', 'images/lives.png');
+                game.load.image('livesSingle', 'images/livesSingle.png');
 
 
                 game.load.spritesheet('collectible', 'sprites/atom.png', {
@@ -96,7 +108,9 @@
                         "fly":     [0, 1, "fly", 1.5],
                         "left":    [2,3, "left"],
                         "right":   [4,5, "right"],
-                        "shields": [6,7, "shields", 0.1]
+                        "shields": [6,7, "shields", 0.1],
+                        "boost":   [8,9, "boost", 0.1],
+                        "explode": [10,13, "explode", 0.1],
                     }
                 });
 
@@ -107,20 +121,39 @@
                         "fly":     [0, 1, "fly", 1.5],
                         "left":    [2,3, "left"],
                         "right":   [4,5, "right"],
-                        "shields": [6,7, "shields", 0.1]
+                        "shields": [6,7, "shields", 0.1],
+                        "boost":   [6,7, "shields", 0.1],
+                        "explode": [6,7, "shields", 0.1]
+                    }
+                });
+
+                game.load.spritesheet('shield', 'images/shield.png', {
+                    "framerate": 30,
+                    "frames": {"regX": 16, "height": 32, "count": 1, "regY": 16, "width": 32},
+                    "animations": {
+                        "fly":     [0,0, "fly", 1.5]
                     }
                 });
             },
 
             create: function() {
 
-                //TODO - we can add multiplayer functionality in here - initialise more robots and get them to move
                 game.robots = [];
-                game.robots.push(new Robot([280, 576], 'redSpaceship', game, 1));
-                game.robots.push(new Robot([720, 576], 'blueSpaceship', game, 2));
+                var lives;
+
+                if (PLAYERS == 2) {
+                    game.robots.push(new Robot([280, 544], 'redSpaceship', game, 1));
+                    game.robots.push(new Robot([720, 544], 'blueSpaceship', game, 2));
+                    lives = game.create.bitmap("lives", {regX:'center', regY:'center', x:40, y:64});
+                } else {
+                    game.robots.push(new Robot([280, 544], 'redSpaceship', game, 1));
+                    lives = game.create.bitmap("livesSingle", {regX:'center', regY:'center', x:40, y:64});
+                }
+
+                game.stage.addChild(lives);
                 game.collectibleHandler = new CollectibleHandler(game);
                 game.difficultyIncrementor = new Difficulty();
-                game.sound.play('background');
+//                game.sound.play('background');
 
                 game.score = game.create.text('Score: 0', {
                     font:'32px arial',
@@ -130,9 +163,7 @@
                 });
                 game.stage.addChild(game.score);
 
-                var title = game.create.bitmap("title", {regX:'center', regY:'center', x:525, y:60});
 
-                game.stage.addChild(title);
 
                 //Planet 1
 

@@ -5,12 +5,13 @@ var Collectible = function (startPosition, sprite, powerAffect, game) {
     //Create the sprite
 
 
-    if (sprite == 'asteroid') {
+    if (powerAffect < 0) {
         this.collectible = game.create.bitmap(sprite, {regX:'center', regY:'center', x:startPosition[0], y:startPosition[1]});
     } else {
         this.collectible = game.create.sprite(sprite, 'fly', {regX:'center', regY:'center', x:startPosition[0], y:startPosition[1]});
     }
 
+    this.moveSpeed = (1 + (0.5 * Math.random())) * COLLECTIBLE_SPEED;
 
     game.stage.addChild(this.collectible);
     this.type = sprite;
@@ -22,7 +23,7 @@ Collectible.prototype.update = function (id, game, collectibleHandler) {
 
     var self = this;
 
-    this.collectible.y += COLLECTIBLE_SPEED * (60 * game.time.fdelta);
+    this.collectible.y += this.moveSpeed * (60 * game.time.fdelta);
 
     //Check if it needs to be deleted
     if (this.collectible.y - 32 > game.canvas.height) {
@@ -34,7 +35,7 @@ Collectible.prototype.update = function (id, game, collectibleHandler) {
         self.checkForCollision(id, game, robot, collectibleHandler);
     });
 
-    if (this.type == 'asteroid') {
+    if (this.type == 'asteroidSmall') {
         this.collectible.rotation += 0.25;
     }
 };
