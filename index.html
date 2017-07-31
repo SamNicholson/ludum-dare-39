@@ -15,8 +15,10 @@
 
 
     <style type="text/css">
-        #container canvas {
+        body {
             background-color: #13071d;
+            text-align: center;
+            padding-top:50px;
         }
     </style>
 </head>
@@ -30,21 +32,23 @@
     ROBOT_SIZE = 64;
     ROBOT_BOTTOM_OFFSET = 32;
 
-    POWER_DEGRADE = 0;
+    POWER_DEGRADE = -0.01;
     PLAYERS = 2;
 
-    ROBOT_JUMP_PENALTY = -0.3;
-    ROBOT_BASE_MOVEMENT_SPEED = 5;
+    ROBOT_JUMP_PENALTY = 0;
+    ROBOT_BASE_MOVEMENT_SPEED = 8;
     ROBOT_MINIMUM_MOVEMENT_SPEED = 3;
     ROBOT_SPRINT_MOVEMENT_MULTIPLIER = 2;
 
-    COLLECTIBLE_BAD_SPAWN_CHANCE = 0.2;
-    COLLECTIBLE_GOOD_SPAWN_CHANCE = 0.2;
-    COLLECTIBLE_SPEED = 1.5;
-    COLLECTIBLE_MAX = 10;
-    COLLECTIBLE_SPAWN_INTERVAL = 1.5;
-    COLLECTIBLE_SPAWN_CHANCE = 0.1;
-    COLLECTIBLE_SHIELD_CHANCE = 0.05;
+    COLLECTIBLE_BAD_SPAWN_CHANCE = 0.5;
+    COLLECTIBLE_GOOD_SPAWN_CHANCE = 0.6;
+    COLLECTIBLE_SPEED = 4;
+    COLLECTIBLE_MAX = 16;
+    COLLECTIBLE_SPAWN_INTERVAL = 0.3;
+    COLLECTIBLE_SPAWN_CHANCE = 1;
+    COLLECTIBLE_SHIELD_CHANCE = 0.03;
+
+    POINTS_MULTIPLIER = 1;
 
     METEOR_SMALL_THRESHOLD = 0.3;
     METEOR_LARGE_THRESHOLD = 0.35;
@@ -68,11 +72,19 @@
                 createjs.Sound.alternateExtensions = ["mp3"];
                 game.load.audio('background', 'audio/BKG_HappyTempIncre.mp3', {group:'background'});
                 game.load.audio('backgroundFast', 'audio/BKG_HappyTemp160.mp3', {group:'backgroundFast'});
-                game.load.audio('asteroidHit', 'audio/FX_PowerPickup4BAD.mp3', {group:'asteroid'});
+                game.load.audio('asteroidHit', 'audio/FX_PowerPickup4BAD.mp3', {group:'asteroidHit'});
+                game.load.audio('collectibleSound', 'audio/FX_PowerPickup12.mp3', {group:'collectibleSound'});
 
                 game.load.image('robot', 'sprites/spaceship_red_base1.png');
                 game.load.image('title', 'images/title.png');
-//                game.load.image('particle', 'images/particle_red.png');
+                game.load.image('menu', 'images/menu.png');
+                game.load.image('instructions', 'images/instructions.png');
+                game.load.image('player1', 'images/1-player.png');
+                game.load.image('player2', 'images/2-player.png');
+                game.load.image('startGame', 'images/start_game.png');
+                game.load.image('story', 'images/story.png');
+                game.load.image('controls', 'images/controls.png');
+                game.load.image('close', 'images/close.png');
                 game.load.image('particleGrey', 'images/particle_gray.png');
 
                 game.load.image('asteroidSmall', 'sprites/asteroidA.png');
@@ -137,83 +149,140 @@
             },
 
             create: function() {
-
-                game.robots = [];
-                var lives;
-
-                if (PLAYERS == 2) {
-                    game.robots.push(new Robot([280, 544], 'redSpaceship', game, 1));
-                    game.robots.push(new Robot([720, 544], 'blueSpaceship', game, 2));
-                    lives = game.create.bitmap("lives", {regX:'center', regY:'center', x:40, y:64});
-                } else {
-                    game.robots.push(new Robot([280, 544], 'redSpaceship', game, 1));
-                    lives = game.create.bitmap("livesSingle", {regX:'center', regY:'center', x:40, y:64});
-                }
-
-                game.stage.addChild(lives);
-                game.collectibleHandler = new CollectibleHandler(game);
-                game.difficultyIncrementor = new Difficulty();
-//                game.sound.play('background');
-
-                game.score = game.create.text('Score: 0', {
-                    font:'32px arial',
-                    color:'#efefef',
-                    x: game.canvas.width - 200,
-                    y: game.canvas.height - 64
-                });
-                game.stage.addChild(game.score);
-
-
-
-                //Planet 1
-
-                var smoke = game.create.bitmap('particleGrey', {regX:'center', regY:'center'});
-
-                planet1Smoke = new tine.Emitter(smoke, 500);
-                planet1Smoke.emitX = 512;
-                planet1Smoke.emitY = 288;
-                planet1Smoke.emitXVar = 1000;
-                planet1Smoke.emitYVar = 600;
-                planet1Smoke.angle = 90;
-                planet1Smoke.angleVar = 0;
-                planet1Smoke.speed = 10;
-                planet1Smoke.speed = 10;
-                planet1Smoke.speedVar = 0;
-                planet1Smoke.life = 50000;
-                planet1Smoke.lifeVar = 0;
-                planet1Smoke.emissionRate = 5000;
-                planet1Smoke.startScale = 0.05;
-                planet1Smoke.endScale = 0.1;
-                planet1Smoke.endScaleVar = 0;
-
-                planet1Smoke.start(-1);
-                game.stage.addChild(planet1Smoke);
-
+                game.menu();
+//                game.start(1);
             },
 
             update: function() {
 
-                $.each(game.robots, function(key, robot) {
-                    robot.update(game);
-                });
-                game.collectibleHandler.update(game);
-                game.difficultyIncrementor.update(game);
-                //Handle updating the game time
-                GAME_TIME = (new Date() - GAME_START_TIME)/1000;
-                GAME_SCORE = Math.round(GAME_TIME * 10) / 10;
-                game.score.text = 'Score: ' + GAME_SCORE;
+                if (game.started) {
+                    $.each(game.robots, function (key, robot) {
+                        robot.update(game);
+                    });
+                    game.collectibleHandler.update(game);
+                    game.difficultyIncrementor.update(game);
+                    //Handle updating the game time
+                    GAME_TIME = (new Date() - GAME_START_TIME) / 1000;
+//                    GAME_SCORE = Math.round(GAME_TIME * 10) / 10;
+                    game.score.text = 'Score: ' + GAME_SCORE;
 
-                planet1Smoke.update(game.time.delta);
-
+                    planet1Smoke.update(game.time.delta);
+                }
             }
         });
 
-        game.end = function() {
-            if (!game.hasEnded) {
-                alert('game over');
+        game.menu = function () {
+
+            game.stage.removeAllChildren();
+            game.sound.play('backgroundFast', "none", 0,0,-1);
+            game.menu = game.create.bitmap("menu", {regX:'center', regY:'center', x:512, y:288});
+            game.stage.addChild(game.menu);
+
+            game.player1 = game.create.bitmap("player1", {regX:'center', regY:'center', x:768, y:175});
+            game.stage.addChild(game.player1);
+            game.player1.addEventListener("click",  function() {
+                game.story = game.create.bitmap("story", {regX:'center', regY:'center', x:512, y:288});
+                game.stage.addChild(game.story);
+                game.playGame = game.create.bitmap("startGame", {regX:'center', regY:'center', x:512, y:502});
+                game.stage.addChild(game.playGame);
+                game.playGame.addEventListener("click",  function() {
+                    game.start(1);
+                });
+            });
+
+
+            game.player2 = game.create.bitmap("player2", {regX:'center', regY:'center', x:768, y:250});
+            game.stage.addChild(game.player2);
+            game.player2.addEventListener("click",  function() {
+                game.story = game.create.bitmap("story", {regX:'center', regY:'center', x:512, y:288});
+                game.stage.addChild(game.story);
+                game.playGame = game.create.bitmap("startGame", {regX:'center', regY:'center', x:512, y:502});
+                game.stage.addChild(game.playGame);
+                game.playGame.addEventListener("click",  function() {
+                    game.start(2);
+                });
+            });
+
+            game.instructions = game.create.bitmap("instructions", {regX:'center', regY:'center', x:768, y:325});
+            game.stage.addChild(game.instructions);
+            game.instructions.addEventListener("click", function() {
+                game.controls = game.create.bitmap("controls", {regX:'center', regY:'center', x:512, y:288});
+                game.stage.addChild(game.controls);
+                game.close = game.create.bitmap("close", {regX:'center', regY:'center', x:830, y:80});
+                game.stage.addChild(game.close);
+                game.close.addEventListener("click", function() {
+                    game.stage.removeChild(game.controls);
+                    game.stage.removeChild(game.close);
+                });
+            });
+        };
+
+        game.end = function(playerNumber) {
+            if (game.players == 1) {
+                alert('Game Over, your score was ' + GAME_SCORE);
                 game.hasEnded = true;
+                location.reload();
+            } else {
+                alert('Game Over, player ' + playerNumber + ' wins!');
+                game.hasEnded = true;
+                location.reload();
             }
-        }
+        };
+
+        game.started = false;
+
+        game.start = function (players) {
+            game.stage.removeAllChildren();
+            game.started = true;
+            game.players = players;
+            game.robots = [];
+            var lives;
+
+            if (players == 2) {
+                game.robots.push(new Robot([280, 544], 'redSpaceship', game, 1));
+                game.robots.push(new Robot([720, 544], 'blueSpaceship', game, 2));
+                lives = game.create.bitmap("lives", {regX:'center', regY:'center', x:40, y:64});
+            } else {
+                game.robots.push(new Robot([280, 544], 'redSpaceship', game, 1));
+                lives = game.create.bitmap("livesSingle", {regX:'center', regY:'center', x:40, y:64});
+            }
+
+            game.stage.addChild(lives);
+            game.collectibleHandler = new CollectibleHandler(game);
+            game.difficultyIncrementor = new Difficulty();
+
+            game.score = game.create.text('Score: 0', {
+                font:'32px arial',
+                color:'#efefef',
+                x: game.canvas.width - 200,
+                y: 32
+            });
+            game.stage.addChild(game.score);
+            game.stage.removeChild(game.menu);
+
+
+            var smoke = game.create.bitmap('particleGrey', {regX:'center', regY:'center'});
+
+            planet1Smoke = new tine.Emitter(smoke, 500);
+            planet1Smoke.emitX = 512;
+            planet1Smoke.emitY = 288;
+            planet1Smoke.emitXVar = 1000;
+            planet1Smoke.emitYVar = 600;
+            planet1Smoke.angle = 90;
+            planet1Smoke.angleVar = 0;
+            planet1Smoke.speed = 10;
+            planet1Smoke.speed = 10;
+            planet1Smoke.speedVar = 0;
+            planet1Smoke.life = 50000;
+            planet1Smoke.lifeVar = 0;
+            planet1Smoke.emissionRate = 5000;
+            planet1Smoke.startScale = 0.05;
+            planet1Smoke.endScale = 0.1;
+            planet1Smoke.endScaleVar = 0;
+
+            planet1Smoke.start(-1);
+            game.stage.addChild(planet1Smoke);
+        };
     });
 </script>
 <body onload="">
@@ -221,8 +290,9 @@
         <div id="game" width="1000px" height="600px"></div>
         <div id="place-holder">
             <div class="bg-dark gameview">
-                <p class="uk-padding-left" style="padding-bottom:2px">FPS: <span id="game-fps">Constant</span></p>
+                <p class="uk-padding-left" style="padding-bottom:2px; color:white;">FPS: <span id="game-fps">Constant</span></p>
         </div>
+        <p style="color: white;">Paranoid Android - Ludum Dare 39</p>
     </div>
 <script>
 </script>

@@ -42,7 +42,7 @@ var Robot = function (startPosition, sprite, game, playerNumber) {
             break;
     }
 
-    this.bar1 = new tine.ProgressBar('green', 'white', tine.BOTTOM_TO_TOP, 415, 15);
+    this.bar1 = new tine.ProgressBar(['red', 'yellow', 'green'], 'white', tine.BOTTOM_TO_TOP, 415, 15);
     this.bar1.value = 100;
     this.bar1.x = powerBarX;
     this.bar1.y = powerBarY;
@@ -119,7 +119,7 @@ Robot.prototype.update = function(game) {
 
 
 Robot.prototype.jump = function(game) {
-    this.robot.y -= this.calculateMovementSpeed() * (60 * game.time.fdelta);
+    this.robot.y -= this.calculateMovementSpeed()  * 0.66 * (60 * game.time.fdelta);
     this.changePower(ROBOT_JUMP_PENALTY);
     this.baseAnimation = 'boost';
 };
@@ -136,7 +136,7 @@ Robot.prototype.moveRight = function(game) {
 };
 
 Robot.prototype.calculateMovementSpeed = function() {
-    var calculated = ROBOT_BASE_MOVEMENT_SPEED * (this.bar1.value / 100) * (this.speedMultiplier);
+    var calculated = ROBOT_BASE_MOVEMENT_SPEED *  (this.speedMultiplier);
     if (calculated > ROBOT_MINIMUM_MOVEMENT_SPEED) {
         return calculated
     }
@@ -144,6 +144,11 @@ Robot.prototype.calculateMovementSpeed = function() {
 };
 
 Robot.prototype.changePower = function(changeAmount) {
+
+    if (changeAmount > 0) {
+        GAME_SCORE += Math.floor(changeAmount * POINTS_MULTIPLIER);
+    }
+
     if (changeAmount < -1) {
         this.robot.gotoAndPlay('shields');
     }
@@ -152,11 +157,10 @@ Robot.prototype.changePower = function(changeAmount) {
         this.bar1.value = 100;
     }
     if (this.bar1.value < 0) {
+        this.looseLife();
         this.bar1.value = 0;
     }
     if (this.bar1.value == 0 && changeAmount <= -1) {
-        console.log(changeAmount);
-        this.looseLife();
     }
 };
 
@@ -164,7 +168,7 @@ Robot.prototype.looseLife = function() {
     if (!this.dying) {
         this.dying = true;
         if (this.lives == 0) {
-            this.game.end();
+            this.game.end(this.playerNumber);
             return true;
         }
         this.lives--;

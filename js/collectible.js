@@ -63,10 +63,10 @@ Collectible.prototype.checkForCollision = function (id, game, robot, collectible
         rect1.height + rect1.y > rect2.y) {
         this.delete(id, game, collectibleHandler);
         robot.changePower(this.powerAffect);
-        if (this.type == 'asteroid') {
-            game.sound.play('asteroid');
+        if (this.powerAffect > 0) {
+            game.sound.play('collectibleSound');
         } else {
-            game.sound.play('collectibleGood');
+            game.sound.play('asteroidHit');
         }
     }
 };
@@ -74,5 +74,6 @@ Collectible.prototype.checkForCollision = function (id, game, robot, collectible
 Collectible.prototype.delete = function (id, game, collectibleHandler) {
     game.stage.removeChild(this.collectible);
     collectibleHandler.collectiblesSpawned--;
-    collectibleHandler.activeCollectables.splice(id, 1);
+    //collectibleHandler.activeCollectables.splice(id, 1);
+    delete collectibleHandler.activeCollectables[id];
 };
